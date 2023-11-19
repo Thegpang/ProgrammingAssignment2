@@ -1,0 +1,61 @@
+# Configure Git with your name and email
+system('git config --global user.name "Thegpang"', intern = TRUE)
+system('git config --global user.email "hguo4.mail.yu.edu"', intern = TRUE)
+
+# Assuming the ProgrammingAssignment2 directory is in the current working directory
+setwd("ProgrammingAssignment2")
+
+# Define the makeCacheMatrix function
+makeCacheMatrix <- function(x = matrix()) {
+    inv <- NULL
+    set <- function(y) {
+        x <<- y
+        inv <<- NULL
+    }
+    get <- function() x
+    setInverse <- function(inverse) inv <<- inverse
+    getInverse <- function() inv
+    list(set = set, get = get,
+         setInverse = setInverse,
+         getInverse = getInverse)
+}
+
+# Define the cacheSolve function
+cacheSolve <- function(x, ...) {
+    inv <- x$getInverse()
+    if (!is.null(inv)) {
+        message("getting cached data")
+        return(inv)
+    }
+    data <- x$get()
+    inv <- solve(data, ...)
+    x$setInverse(inv)
+    inv
+}
+
+# Save the functions to an R script within the directory
+writeLines(c("makeCacheMatrix <- ", deparse(makeCacheMatrix), 
+             "\ncacheSolve <- ", deparse(cacheSolve)),
+           "cachematrix.R")
+
+# Stage all changes for commit
+system("git add -A", intern = TRUE)
+
+# Commit the changes with a message
+commit_status <- system('git commit -m "Add solution for caching the inverse of a matrix"', intern = TRUE)
+print(commit_status)
+
+# Push the commit to GitHub only if there's something to commit
+if (!grepl("nothing to commit", commit_status)) {
+    push_status <- system("git push origin master", intern = TRUE)
+    print(push_status)
+} else {
+    print("No changes to commit.")
+}
+
+# Check the status of the push to make sure it was successful
+if (exists("push_status") && grepl("Error", push_status)) {
+    print("Error encountered during push. Check GitHub status and try again later.")
+} else {
+    print("Push successful or no push attempted due to commit status.")
+}
